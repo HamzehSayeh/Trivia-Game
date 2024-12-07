@@ -10,6 +10,7 @@ const {
   getPlayer,
   removePlayer,
 } = require("./utils/players.js");
+
 const { error } = require("console");
 
 const app = express();
@@ -24,14 +25,48 @@ app.use(express.static(publicDirectoryPath));
 
 io.on("connection", (socket) => {
   console.log(`new user connected`);
+
   socket.on("join", ({ playerName, room }, callback) => {
     const { error, newPlayer } = addPlayer({ playerName, room, id: socket.id });
+
     if (error) return callback(error.message);
     callback();
 
     socket.join(newPlayer.room);
 
     socket.emit("message", formatMessage("Admin", "Welcome!"));
+
+    socket.broadcast
+      .to(newPlayer.room)
+      .emit(
+        "message",
+        formatMessage("admin", `${newPlayer.playerName} has joined the game`)
+      );
+    console.log(getAllPlayers(newPlayer.room));
+    io.in(newPlayer.room).emit("room", {
+      room: newPlayer.room,
+      players: getAllPlayers(newPlayer.room),
+    });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A player disconnected.");
+
+    const disconnectedPlayer = removePlayer(socket.id);
+    console.log(disconnectedPlayer);
+
+    if (disconnectedPlayer) {
+      const { playerName, room } = disconnectedPlayer;
+      io.in(room).emit(
+        "message",
+        formatMessage("Admin", `${playerName} has left!`)
+      );
+
+      io.in(room).emit("room", {
+        room,
+        players: getAllPlayers(room),
+      });
+    }
   });
 });
 

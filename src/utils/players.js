@@ -38,10 +38,8 @@ const findPlayerById = (id) => {
   return { player };
 };
 
-const getAllPLayers = (room) => {
-  return players.filter((player) => {
-    player.room === room;
-  });
+const getAllPlayers = (room) => {
+  return players.filter((player) => player.room === room);
 };
 
 const removePlayer = (id) => {
@@ -55,7 +53,7 @@ const removePlayer = (id) => {
 
 module.exports = {
   addPlayer,
-  getAllPLayers,
+  getAllPlayers,
   findPlayerById,
   removePlayer,
 };
