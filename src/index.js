@@ -1,7 +1,8 @@
 const express = require("express");
-const path = require("path");
 const http = require("http");
+const path = require("path");
 const socketio = require("socket.io");
+
 const formatMessage = require("./utils/formatMessage.js");
 
 const {
@@ -11,14 +12,9 @@ const {
   removePlayer,
 } = require("./utils/players.js");
 
-const { setGame } = require("./utils/game.js");
-
-const { error } = require("console");
+const { getGameStatus, setGame, setGameStatus } = require("./utils/game.js");
 
 const app = express();
-
-const port = process.env.PORT || 8080;
-
 const server = http.createServer(app);
 const io = socketio(server);
 
@@ -26,10 +22,10 @@ const publicDirectoryPath = path.join(__dirname, "../public");
 app.use(express.static(publicDirectoryPath));
 
 io.on("connection", (socket) => {
-  console.log(`new user connected`);
+  console.log("A new player just connected");
 
   socket.on("join", ({ playerName, room }, callback) => {
-    const { error, newPlayer } = addPlayer({ playerName, room, id: socket.id });
+    const { error, newPlayer } = addPlayer({ id: socket.id, playerName, room });
 
     if (error) return callback(error.message);
     callback();
@@ -42,7 +38,7 @@ io.on("connection", (socket) => {
       .to(newPlayer.room)
       .emit(
         "message",
-        formatMessage("admin", `${newPlayer.playerName} has joined the game`)
+        formatMessage("Admin", `${newPlayer.playerName} has joined the game!`)
       );
 
     io.in(newPlayer.room).emit("room", {
@@ -65,6 +61,57 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("getQuestion", async (data, callback) => {
+    const { error, player } = findPlayerById(socket.id);
+
+    if (error) return callback(error.message);
+
+    if (player) {
+      const game = await setGame();
+      io.to(player.room).emit("question", {
+        playerName: player.playerName,
+        ...game.prompt,
+      });
+    }
+  });
+
+  socket.on("sendAnswer", (answer, callback) => {
+    const { error, player } = findPlayerById(socket.id);
+
+    if (error) return callback(error.message);
+
+    if (player) {
+      const { isRoundOver } = setGameStatus({
+        event: "sendAnswer",
+        playerId: player.id,
+        room: player.room,
+      });
+
+      io.to(player.room).emit("answer", {
+        ...formatMessage(player.playerName, answer),
+        isRoundOver,
+      });
+
+      callback();
+    }
+  });
+
+  socket.on("getAnswer", (data, callback) => {
+    const { error, player } = findPlayerById(socket.id);
+
+    if (error) return callback(error.message);
+
+    if (player) {
+      const { correctAnswer } = getGameStatus({
+        event: "getAnswer",
+      });
+      io.to(player.room).emit(
+        "correctAnswer",
+        formatMessage(player.playerName, correctAnswer)
+      );
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("A player disconnected.");
 
@@ -83,22 +130,9 @@ io.on("connection", (socket) => {
       });
     }
   });
-
-  socket.on("getQuestion", async (data, callback) => {
-    const { error, player } = findPlayerById(socket.id);
-
-    if (error) return callback(error.message);
-
-    if (player) {
-      const game = await setGame();
-      io.to(player.room).emit("question", {
-        playerName: player.playerName,
-        ...game.prompt,
-      });
-    }
-  });
 });
 
+const port = process.env.PORT || 8080;
 server.listen(port, () => {
   console.log(`server is running on http://localhost:${port}/`);
 });
