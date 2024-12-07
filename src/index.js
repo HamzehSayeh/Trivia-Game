@@ -11,6 +11,8 @@ const {
   removePlayer,
 } = require("./utils/players.js");
 
+const { setGame } = require("./utils/game.js");
+
 const { error } = require("console");
 
 const app = express();
@@ -42,7 +44,7 @@ io.on("connection", (socket) => {
         "message",
         formatMessage("admin", `${newPlayer.playerName} has joined the game`)
       );
-    console.log(getAllPlayers(newPlayer.room));
+
     io.in(newPlayer.room).emit("room", {
       room: newPlayer.room,
       players: getAllPlayers(newPlayer.room),
@@ -78,6 +80,20 @@ io.on("connection", (socket) => {
       io.in(room).emit("room", {
         room,
         players: getAllPlayers(room),
+      });
+    }
+  });
+
+  socket.on("getQuestion", async (data, callback) => {
+    const { error, player } = findPlayerById(socket.id);
+
+    if (error) return callback(error.message);
+
+    if (player) {
+      const game = await setGame();
+      io.to(player.room).emit("question", {
+        playerName: player.playerName,
+        ...game.prompt,
       });
     }
   });
