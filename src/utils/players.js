@@ -25,9 +25,7 @@ const addPlayer = ({ id, playerName, room }) => {
 };
 
 const findPlayerById = (id) => {
-  const player = players.find((player) => {
-    player.id === id;
-  });
+  const player = players.find((player) => player.id === id);
 
   if (!player) {
     return {
@@ -43,7 +41,7 @@ const getAllPlayers = (room) => {
 };
 
 const removePlayer = (id) => {
-  players.find((player, index) => {
+  return players.find((player, index) => {
     if (player.id === id) {
       return players.splice(index, 1)[0];
     }
