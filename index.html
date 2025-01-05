@@ -8,7 +8,7 @@
   </head>
 
   <body>
-    <form class="registration-form" action="trivia.html">
+    <form class="registration-form" action="#">
       <label for="player-name">Player Name</label>
       <input
         id="player-name"
@@ -27,3 +27,21 @@
     </form>
   </body>
 </html>
+<script>
+  const form = document.querySelector(".registration-form");
+  form.addEventListener("submit", (event) => {
+    event.preventDefault(); // Prevent default form submission
+
+    const playerName = document.getElementById("player-name").value;
+    const room = document.getElementById("room").value;
+
+    if (playerName && room) {
+      // Redirect to trivia.html and pass playerName and room as query parameters
+      window.location.href = `trivia.html?playerName=${encodeURIComponent(
+        playerName
+      )}&room=${encodeURIComponent(room)}`;
+    } else {
+      alert("Please fill in both fields.");
+    }
+  });
+</script>
