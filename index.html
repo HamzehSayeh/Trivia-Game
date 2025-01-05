@@ -45,3 +45,14 @@
     }
   });
 </script>
+<script>
+  const queryParams = new URLSearchParams(window.location.search);
+  const playerName = queryParams.get("playerName");
+  const room = queryParams.get("room");
+
+  if (playerName && room) {
+    document.body.innerHTML = `<h1>Welcome, ${playerName}!</h1><p>You joined room: ${room}</p>`;
+  } else {
+    document.body.innerHTML = `<h1>Error: Missing player name or room!</h1>`;
+  }
+</script>
