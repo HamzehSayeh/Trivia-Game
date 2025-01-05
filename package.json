@@ -1,0 +1,19 @@
+{
+  "name": "trivia-game",
+  "version": "1.0.0",
+  "description": "A real-time multiplayer trivia game where players can join a room, chat, and compete to answer questions!",
+  "main": "index.js",
+  "homepage": "https://hamzehsayeh.github.io/Trivia-Game",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2",
+    "socket.io": "^4.8.1"
+  }
+}
