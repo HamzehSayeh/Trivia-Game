@@ -5,7 +5,7 @@
   "main": "index.js",
   "homepage": "https://hamzehsayeh.github.io/Trivia-Game",
   "scripts": {
-    "predeploy": "npm run build",
+    "predeploy": "cp -r public build",
     "deploy": "gh-pages -d build"
   },
   "keywords": [],
@@ -15,5 +15,8 @@
     "express": "^4.21.2",
     "node-fetch": "^3.3.2",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
